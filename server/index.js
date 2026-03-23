@@ -37,6 +37,8 @@ router.get("/health", (req, res) => {
 app.use("/api", appRouterIndex);
 app.use("/", router);
 io.use(socketVerify);
+
+const onlineUsers = new Map();
 io.on("connection", (socket) => {
   const user = socket.user;
   console.log("socket user ", user);
@@ -47,11 +49,14 @@ io.on("connection", (socket) => {
     socket.disconnect();
     return;
   }
-  console.log("user connected ", {
-    socketId: socket.id,
-    user: socket?.user?.userId || "unknown",
+  onlineUsers.set(user.userId, socket.id);
+  console.log("user connected", {
+    onlineUsers,
+    totalUsers: onlineUsers.size,
   });
-  socket.emit("message", "Welcome to server");
+  socket.join(user.userId);
+  socket.emit("message", `Welcome to server user ${user.userId}`);
+  socket.broadcast.emit("message", `User ${user.userId} has joined the chat`);
 
   socket.on("disconnect", () => {
     console.log("user disconnected", {
@@ -65,3 +70,5 @@ connectDb(databaseUri);
 server.listen(3000, () => {
   console.log("server listening on port 3000");
 });
+
+module.exports = { onlineUsers };

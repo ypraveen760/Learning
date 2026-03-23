@@ -45,11 +45,6 @@ module.exports.socketVerify = async (socket, next) => {
     // 4️⃣ Attach user
     socket.user = payload;
 
-    console.log("✅ Socket authenticated:", {
-      userId: payload.id,
-      socketId: socket.id,
-    });
-
     next();
   } catch (error) {
     console.error("🚨 Socket auth error:", error.message);
